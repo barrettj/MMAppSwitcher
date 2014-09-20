@@ -17,9 +17,8 @@
 
 @property (nonatomic, weak) id<MMAppSwitcherDataSource> dataSource;
 @property (nonatomic, strong) UIView *view;
-@property (nonatomic, strong) UIWindow *window;
-@property (nonatomic, strong) UIWindow *originalWindow;
 @property (nonatomic, assign) BOOL showStatusBar;
+@property (nonatomic, strong) UIWindow *mainWindow;
 
 @end
 
@@ -31,10 +30,7 @@ static MMAppSwitcher *_sharedInstance;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
         _sharedInstance = [MMAppSwitcher new];
-        _sharedInstance.originalWindow = [[UIApplication sharedApplication] keyWindow];
-        _sharedInstance.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
-        _sharedInstance.window.backgroundColor = [UIColor blackColor];
-        _sharedInstance.window.windowLevel = UIWindowLevelStatusBar;
+        _sharedInstance.mainWindow = [[UIApplication sharedApplication] keyWindow];
     });
     return _sharedInstance;
 }
@@ -64,8 +60,8 @@ static MMAppSwitcher *_sharedInstance;
             [self.view removeFromSuperview];
             UIImageView *cardView = [view mm_rasterizedView];
             self.view = cardView;
-            self.view.frame = (CGRect){0, 0, self.window.bounds.size};
-            [self.window addSubview:self.view];
+            self.view.frame = (CGRect){0, 0, self.mainWindow.bounds.size};
+            [self.mainWindow addSubview:self.view];
         } else {
             [self.view removeFromSuperview];
             self.view = nil;
@@ -105,7 +101,6 @@ static MMAppSwitcher *_sharedInstance;
 - (void)appWillEnterForeground {
     [self.view removeFromSuperview];
     self.view = nil;
-    self.window.hidden = YES;
     [[UIApplication sharedApplication] setStatusBarHidden:self.showStatusBar];
 }
 
@@ -113,7 +108,6 @@ static MMAppSwitcher *_sharedInstance;
      self.showStatusBar = [[UIApplication sharedApplication] isStatusBarHidden];
     [[UIApplication sharedApplication] setStatusBarHidden:YES];
     [self loadCard];
-    self.window.hidden = NO;
 }
 
 @end
